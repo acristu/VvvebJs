@@ -31,8 +31,8 @@ $canvas-width-substract: $builder-left-panel-width + $builder-right-panel-width 
 $canvas-no-right-width-substract: $builder-left-panel-width  + $builder-canvas-margin;
 $canvas-height-substract: $builder-header-top-height + $builder-bottom-panel-height;
 
-$builder-left-panel-width:15vw;
-$builder-right-panel-width:15vw;
+$builder-left-panel-width:14vw;
+$builder-right-panel-width:14vw;
 
 
 $font-size-base: .875rem;
@@ -329,12 +329,12 @@ body
 	{
 		#bottom-panel
 		{
-			height:50%;
+			height:33%;
 		}	
 		
 		#canvas
 		{
-			height:50%;
+			height:67%;
 		}
 	}
 
