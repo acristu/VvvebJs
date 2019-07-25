@@ -9106,7 +9106,7 @@ https://github.com/givanz/VvvebJs
 .tree ol {
   padding: 0.3rem 0 0 2rem;
   width: 300px;
-  width: 29vw;
+  width: 15vw;
   font-size: 12px;
   color: #555; }
   .tree ol li {
@@ -9186,8 +9186,8 @@ https://github.com/givanz/VvvebJs
 
 body {
   background: #eee;
-  --builder-left-panel-width: 14vw;
-  --builder-right-panel-width: 14vw;
+  --builder-left-panel-width: 18vw;
+  --builder-right-panel-width: 0vw;
   --builder-filemanager-height: 200px;
   --builder-canvas-margin: 0px;
   --builder-header-top-height:40px;
@@ -9234,13 +9234,13 @@ body {
   background: -webkit-linear-gradient(left, #fff 85%, #fcfcfc 100%);
   background: linear-gradient(left, #fff 85%, #fcfcfc 100%);
   box-shadow: -1px -2px 2px #f3f3f3 inset;
-  width: 14vw;
+  width: 18vw;
   width: calc(var(--builder-left-panel-width));
   height: 100%;
   max-height: 100%; }
   #vvveb-builder #left-panel #filemanager {
     height: 200px;
-    width: 29vw;
+    width: 15vw;
     height: var(--builder-filemanager-height);
     width: calc( var(--builder-left-panel-width));
     border-bottom: 1px solid #ddd; }
@@ -9292,7 +9292,7 @@ body {
   background: -webkit-linear-gradient(right, #fff 85%, #fcfcfc 100%);
   background: linear-gradient(right, #fff 85%, #fcfcfc 100%);
   box-shadow: 1px -2px 2px #f3f3f3 inset;
-  width: 14vw;
+  width: 0vw;
   width: var(--builder-right-panel-width); }
   #vvveb-builder #right-panel .components-list, #vvveb-builder #right-panel .blocks-list, #vvveb-builder #right-panel .component-properties {
     width: var(--builder-right-panel-width); }
@@ -9316,10 +9316,10 @@ body {
   bottom: 0px;
   position: fixed;
   border-top: 1px solid #ddd;
-  left: 14vw;
+  left: 18vw;
   left: calc($builder-left-panel-width +  $builder-canvas-margin);
   left: calc( var(--builder-left-panel-width) + var(--builder-canvas-margin));
-  right: 14vw;
+  right: 0vw;
   right: var(--builder-right-panel-width);
   background-color: #fff; }
   #vvveb-builder #bottom-panel #vvveb-code-editor {
@@ -9513,8 +9513,8 @@ body {
       min-height: 1.1rem; }
 
 #vvveb-builder #canvas {
-  margin-right: 14vw;
-  margin-left: 14vw;
+  margin-right: 0vw;
+  margin-left: 18vw;
   margin-right: var(--builder-right-panel-width);
   margin-left: var(--builder-left-panel-width);
   width: 100%;
@@ -9533,11 +9533,11 @@ body {
     border: none; }
   #vvveb-builder #canvas.tablet {
     width: 768px !important;
-    left: calc(50% - 398vw);
+    left: calc(50% - 402vw);
     left: calc(50% - ((768px / 2) + var(--builder-left-panel-width))); }
   #vvveb-builder #canvas.mobile {
     width: 320px !important;
-    left: calc(50% - 174vw);
+    left: calc(50% - 178vw);
     left: calc(50% - ((320px / 2) + var(--builder-left-panel-width))); }
 
 #vvveb-builder.preview #canvas {
