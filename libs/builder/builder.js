@@ -60,25 +60,6 @@ var delay = (function(){
   };
 })();
 
-function getStyle(el,styleProp)
-{
-	value = "";
-	//var el = document.getElementById(el);
-	if (el.style && el.style.length > 0 && el.style[styleProp])//check inline
-		var value = el.style[styleProp];
-	else
-	if (el.currentStyle)	//check defined css
-		var value = el.currentStyle[styleProp];
-	else if (window.getComputedStyle)
-	{
-		var value = document.defaultView.getDefaultComputedStyle ? 
-						document.defaultView.getDefaultComputedStyle(el,null).getPropertyValue(styleProp) : 
-						window.getComputedStyle(el,null).getPropertyValue(styleProp);
-	}
-	
-	return value;
-}
-
 function isElement(obj){
    return (typeof obj==="object") &&
       (obj.nodeType===1) && (typeof obj.style === "object") &&
@@ -299,13 +280,14 @@ Vvveb.Components = {
 	render: function(type) {
 
 		var component = this._components[type];
-		
+
 		var componentsPanel = jQuery(this.componentPropertiesElement);
 		var defaultSection = this.componentPropertiesDefaultSection;
 		var componentsPanelSections = {};
-		jQuery(".tab-pane",componentsPanel).each(function ()
+
+		jQuery(this.componentPropertiesElement + " .tab-pane").each(function ()
 		{
-			var sectionName = this.id.replace('-tab', '');
+			var sectionName = this.dataset.section;
 			componentsPanelSections[sectionName] = $(this);
 			
 		});
@@ -348,7 +330,11 @@ Vvveb.Components = {
 						}
 						else if (property.htmlAttr == "style") 
 						{
-							element = element.css(property.key, value);
+							element = Vvveb.StyleManager.setStyle(element, property.key, value);
+						}
+						else if (property.htmlAttr == "innerHTML") 
+						{
+							element = Vvveb.ContentManager.setHtml(element, value);
 						}
 						else
 						{
@@ -403,7 +389,11 @@ Vvveb.Components = {
 				if (property.htmlAttr == "style")
 				{
 					//value = element.css(property.key);//jquery css returns computed style
-					var value = getStyle(element.get(0), property.key);//getStyle returns declared style
+					var value = Vvveb.StyleManager.getStyle(element, property.key);//getStyle returns declared style
+				} else
+				if (property.htmlAttr == "innerHTML")
+				{
+					var value = Vvveb.ContentManager.getHtml(element);
 				} else
 				{
 					var value = element.attr(property.htmlAttr);
@@ -585,16 +575,18 @@ Vvveb.Builder = {
 		var componentsList = $(".components-list");
 		componentsList.empty();
 		var item = {}, component = {};
+		var count = 0;
 		
 		componentsList.each(function ()
 		{
 			var list = $(this);
 			var type = this.dataset.type;
+			count ++;
 			
 			for (group in Vvveb.ComponentsGroup)	
 			{
-				list.append('<li class="header clearfix" data-section="' + group + '"  data-search=""><label class="header" for="' + type + '_comphead_' + group + '">' + group + '  <div class="header-arrow"></div>\
-									   </label><input class="header_check" type="checkbox" checked="true" id="' + type + '_comphead_' + group + '">  <ol></ol></li>');
+				list.append('<li class="header clearfix" data-section="' + group + '"  data-search=""><label class="header" for="' + type + '_comphead_' + group + count + '">' + group + '  <div class="header-arrow"></div>\
+									   </label><input class="header_check" type="checkbox" checked="true" id="' + type + '_comphead_' + group + count + '">  <ol></ol></li>');
 
 				var componentsSubList = list.find('li[data-section="' + group + '"]  ol');
 				
@@ -688,6 +680,8 @@ Vvveb.Builder = {
 				window.FrameWindow = self.iframe.contentWindow;
 				window.FrameDocument = self.iframe.contentWindow.document;
 				var addSectionBox = jQuery("#add-section-box"); 
+				var highlightBox = jQuery("#highlight-box").hide(); 
+				
 
 				$(window.FrameWindow).on( "beforeunload", function(event) {
 					if (Vvveb.Undo.undoIndex <= 0)
@@ -718,7 +712,7 @@ Vvveb.Builder = {
 						{
 							var offset = self.highlightEl.offset();
 							
-							jQuery("#highlight-box").css(
+							highlightBox.css(
 								{"top": offset.top - self.frameDoc.scrollTop() , 
 								 "left": offset.left - self.frameDoc.scrollLeft() , 
 								 "width" : self.highlightEl.outerWidth(), 
@@ -753,6 +747,8 @@ Vvveb.Builder = {
 		self.frameHead.append('<link data-vvveb-helpers href="' + Vvveb.baseUrl + '../../css/vvvebjs-editor-helpers.css" rel="stylesheet">');
 
 		self._initHighlight();
+		
+		$(window).triggerHandler("vvveb.iframe.loaded", self.frameDoc);
     },	
     
     _getElementType: function(el) {
@@ -898,7 +894,14 @@ Vvveb.Builder = {
 						  "display" : event.target.hasAttribute('contenteditable')?"none":"block",
 						  "border":self.isDragging?"1px dashed aqua":"",//when dragging highlight parent with green
 						 });
-						 
+
+					if (height < 50) 
+					{
+						jQuery("#section-actions").addClass("outside");	 
+					} else
+					{
+						jQuery("#section-actions").removeClass("outside");	
+					}
 					jQuery("#highlight-name").html(self._getElementType(event.target));
 					if (self.isDragging) jQuery("#highlight-name").hide(); else jQuery("#highlight-name").show();//hide tag name when dragging
 				}
@@ -1296,6 +1299,8 @@ Vvveb.Builder = {
 		var hasDoctpe = (doc.doctype !== null);
 		var html = "";
 		
+		$(window).triggerHandler("vvveb.getHtml.before", doc);
+		
 		if (hasDoctpe) html =
 		"<!DOCTYPE "
          + doc.doctype.name
@@ -1306,7 +1311,12 @@ Vvveb.Builder = {
           
          html +=  doc.documentElement.innerHTML + "\n</html>";
          
-         return this.removeHelpers(html, keepHelperAttributes);
+         html = this.removeHelpers(html, keepHelperAttributes);
+         
+         var filter = $(window).triggerHandler("vvveb.getHtml.after", html);
+         if (filter) return filter;
+         
+         return html;
 	},
 	
 	setHtml: function(html) 
@@ -1644,6 +1654,55 @@ Vvveb.Gui = {
 	},
 }
 
+Vvveb.StyleManager = {
+	setStyle: function(element, styleProp, value) {
+		return element.css(styleProp, value);
+	},
+	
+	
+	_getCssStyle: function(element, styleProp){
+		var value = "";
+		var el = element.get(0);
+		
+		if (el.style && el.style.length > 0 && el.style[styleProp])//check inline
+			var value = el.style[styleProp];
+		else
+		if (el.currentStyle)	//check defined css
+			var value = el.currentStyle[styleProp];
+		else if (window.getComputedStyle)
+		{
+			var value = document.defaultView.getDefaultComputedStyle ? 
+							document.defaultView.getDefaultComputedStyle(el,null).getPropertyValue(styleProp) : 
+							window.getComputedStyle(el,null).getPropertyValue(styleProp);
+		}
+		
+		return value;
+	},
+	
+	getStyle: function(element,styleProp){
+		return this._getCssStyle(element, styleProp);
+	}
+}
+
+Vvveb.ContentManager = {
+	getAttr: function(element, attrName) {
+		return element.attr(attrName);
+	},
+	
+	setAttr: function(element, attrName, value) {
+		return element.attr(attrName, value);
+	},
+	
+	setHtml: function(element, html) {
+		return element.html(html);
+	},
+	
+	getHtml: function(element) {
+		return element.html();
+	},
+}
+
+
 Vvveb.FileManager = {
 	tree:false,
 	pages:{},
@@ -1749,6 +1808,7 @@ Vvveb.FileManager = {
 
 		var tree = this.getComponents(allowedComponents);
 		var html = drawComponentsTree(tree);
+		var j = 0;
 
 		function drawComponentsTree(tree)
 		{
